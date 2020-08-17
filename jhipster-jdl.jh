@@ -1,0 +1,20 @@
+
+entity Task {
+	title String,
+    done Boolean,
+	description String
+}
+
+
+entity TaskList {
+	name String
+}
+
+relationship OneToMany {
+	TaskList{tasks} to Task{list}
+}
+
+
+paginate TaskList with pagination
+
+dto * with mapstruct

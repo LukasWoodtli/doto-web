@@ -1,0 +1,24 @@
+{
+  "dotoApp": {
+    "taskList": {
+      "home": {
+        "title": "Task Lists",
+        "createLabel": "Task List erstellen",
+        "createOrEditLabel": "Task List erstellen oder bearbeiten",
+        "search": "Suche nach Task List",
+        "notFound": "No Task Lists found"
+      },
+      "created": "Task List erstellt mit ID {{ param }}",
+      "updated": "Task List aktualisiert mit ID {{ param }}",
+      "deleted": "Task List gelöscht mit ID {{ param }}",
+      "delete": {
+        "question": "Soll Task List {{ id }} wirklich dauerhaft gelöscht werden?"
+      },
+      "detail": {
+        "title": "Task List"
+      },
+      "name": "Name",
+      "tasks": "Tasks"
+    }
+  }
+}

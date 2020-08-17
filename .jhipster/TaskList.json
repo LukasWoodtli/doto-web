@@ -1,0 +1,28 @@
+{
+  "name": "TaskList",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "task",
+      "otherEntityRelationshipName": "list",
+      "relationshipName": "tasks"
+    }
+  ],
+  "changelogDate": "20200817200258",
+  "entityTableName": "task_list",
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceClass",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}
