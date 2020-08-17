@@ -16,9 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing {@link info.woodtli.doto.domain.Task}.
@@ -115,18 +112,5 @@ public class TaskResource {
         log.debug("REST request to delete Task : {}", id);
         taskService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
-    }
-
-    /**
-     * {@code SEARCH  /_search/tasks?query=:query} : search for the task corresponding
-     * to the query.
-     *
-     * @param query the query of the task search.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/tasks")
-    public List<TaskDTO> searchTasks(@RequestParam String query) {
-        log.debug("REST request to search Tasks for query {}", query);
-        return taskService.search(query);
     }
 }

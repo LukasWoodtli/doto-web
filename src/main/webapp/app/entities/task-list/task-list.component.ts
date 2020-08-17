@@ -18,7 +18,6 @@ import { TaskListDeleteDialogComponent } from './task-list-delete-dialog.compone
 export class TaskListComponent implements OnInit, OnDestroy {
   taskLists?: ITaskList[];
   eventSubscriber?: Subscription;
-  currentSearch: string;
   totalItems = 0;
   itemsPerPage = ITEMS_PER_PAGE;
   page!: number;
@@ -32,30 +31,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
     protected router: Router,
     protected eventManager: JhiEventManager,
     protected modalService: NgbModal
-  ) {
-    this.currentSearch =
-      this.activatedRoute.snapshot && this.activatedRoute.snapshot.queryParams['search']
-        ? this.activatedRoute.snapshot.queryParams['search']
-        : '';
-  }
+  ) {}
 
   loadPage(page?: number, dontNavigate?: boolean): void {
     const pageToLoad: number = page || this.page || 1;
-
-    if (this.currentSearch) {
-      this.taskListService
-        .search({
-          page: pageToLoad - 1,
-          query: this.currentSearch,
-          size: this.itemsPerPage,
-          sort: this.sort(),
-        })
-        .subscribe(
-          (res: HttpResponse<ITaskList[]>) => this.onSuccess(res.body, res.headers, pageToLoad, !dontNavigate),
-          () => this.onError()
-        );
-      return;
-    }
 
     this.taskListService
       .query({
@@ -67,11 +46,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
         (res: HttpResponse<ITaskList[]>) => this.onSuccess(res.body, res.headers, pageToLoad, !dontNavigate),
         () => this.onError()
       );
-  }
-
-  search(query: string): void {
-    this.currentSearch = query;
-    this.loadPage(1);
   }
 
   ngOnInit(): void {
@@ -125,13 +99,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
   protected onSuccess(data: ITaskList[] | null, headers: HttpHeaders, page: number, navigate: boolean): void {
     this.totalItems = Number(headers.get('X-Total-Count'));
     this.page = page;
-    this.ngbPaginationPage = this.page;
     if (navigate) {
       this.router.navigate(['/task-list'], {
         queryParams: {
           page: this.page,
           size: this.itemsPerPage,
-          search: this.currentSearch,
           sort: this.predicate + ',' + (this.ascending ? 'asc' : 'desc'),
         },
       });

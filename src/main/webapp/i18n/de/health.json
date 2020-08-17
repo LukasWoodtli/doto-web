@@ -18,7 +18,6 @@
       "diskSpace": "Festplattenspeicher",
       "mail": "Email",
       "ping": "Application",
-      "elasticsearch": "Elasticsearch",
       "db": "Datenbank"
     },
     "table": {

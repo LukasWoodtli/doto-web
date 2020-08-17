@@ -1,7 +1,7 @@
 
 entity Task {
-	title String,
-    done Boolean,
+	title String
+	done Boolean
 	description String
 }
 

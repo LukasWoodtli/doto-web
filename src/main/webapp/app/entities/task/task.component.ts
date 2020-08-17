@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { JhiEventManager } from 'ng-jhipster';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -16,36 +15,11 @@ import { TaskDeleteDialogComponent } from './task-delete-dialog.component';
 export class TaskComponent implements OnInit, OnDestroy {
   tasks?: ITask[];
   eventSubscriber?: Subscription;
-  currentSearch: string;
 
-  constructor(
-    protected taskService: TaskService,
-    protected eventManager: JhiEventManager,
-    protected modalService: NgbModal,
-    protected activatedRoute: ActivatedRoute
-  ) {
-    this.currentSearch =
-      this.activatedRoute.snapshot && this.activatedRoute.snapshot.queryParams['search']
-        ? this.activatedRoute.snapshot.queryParams['search']
-        : '';
-  }
+  constructor(protected taskService: TaskService, protected eventManager: JhiEventManager, protected modalService: NgbModal) {}
 
   loadAll(): void {
-    if (this.currentSearch) {
-      this.taskService
-        .search({
-          query: this.currentSearch,
-        })
-        .subscribe((res: HttpResponse<ITask[]>) => (this.tasks = res.body || []));
-      return;
-    }
-
     this.taskService.query().subscribe((res: HttpResponse<ITask[]>) => (this.tasks = res.body || []));
-  }
-
-  search(query: string): void {
-    this.currentSearch = query;
-    this.loadAll();
   }
 
   ngOnInit(): void {

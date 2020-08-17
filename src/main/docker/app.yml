@@ -10,18 +10,12 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://admin:$${jhipster.registry.password}@jhipster-registry:8761/config
       - SPRING_DATASOURCE_URL=jdbc:postgresql://doto-postgresql:5432/doto
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
-      - SPRING_DATA_JEST_URI=http://doto-elasticsearch:9200
-      - SPRING_ELASTICSEARCH_REST_URIS=http://doto-elasticsearch:9200
     ports:
       - 8080:8080
   doto-postgresql:
     extends:
       file: postgresql.yml
       service: doto-postgresql
-  doto-elasticsearch:
-    extends:
-      file: elasticsearch.yml
-      service: doto-elasticsearch
   jhipster-registry:
     extends:
       file: jhipster-registry.yml

@@ -5,7 +5,6 @@
         "title": "Task Lists",
         "createLabel": "Create a new Task List",
         "createOrEditLabel": "Create or edit a Task List",
-        "search": "Search for Task List",
         "notFound": "No Task Lists found"
       },
       "created": "A new Task List is created with identifier {{ param }}",

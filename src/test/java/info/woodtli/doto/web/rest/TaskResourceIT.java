@@ -3,16 +3,12 @@ package info.woodtli.doto.web.rest;
 import info.woodtli.doto.DotoApp;
 import info.woodtli.doto.domain.Task;
 import info.woodtli.doto.repository.TaskRepository;
-import info.woodtli.doto.repository.search.TaskSearchRepository;
 import info.woodtli.doto.service.TaskService;
 import info.woodtli.doto.service.dto.TaskDTO;
 import info.woodtli.doto.service.mapper.TaskMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,13 +17,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Integration tests for the {@link TaskResource} REST controller.
  */
 @SpringBootTest(classes = DotoApp.class)
-@ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
 @WithMockUser
 public class TaskResourceIT {
@@ -57,14 +49,6 @@ public class TaskResourceIT {
 
     @Autowired
     private TaskService taskService;
-
-    /**
-     * This repository is mocked in the info.woodtli.doto.repository.search test package.
-     *
-     * @see info.woodtli.doto.repository.search.TaskSearchRepositoryMockConfiguration
-     */
-    @Autowired
-    private TaskSearchRepository mockTaskSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -124,9 +108,6 @@ public class TaskResourceIT {
         assertThat(testTask.getTitle()).isEqualTo(DEFAULT_TITLE);
         assertThat(testTask.isDone()).isEqualTo(DEFAULT_DONE);
         assertThat(testTask.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
-
-        // Validate the Task in Elasticsearch
-        verify(mockTaskSearchRepository, times(1)).save(testTask);
     }
 
     @Test
@@ -147,9 +128,6 @@ public class TaskResourceIT {
         // Validate the Task in the database
         List<Task> taskList = taskRepository.findAll();
         assertThat(taskList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Task in Elasticsearch
-        verify(mockTaskSearchRepository, times(0)).save(task);
     }
 
 
@@ -222,9 +200,6 @@ public class TaskResourceIT {
         assertThat(testTask.getTitle()).isEqualTo(UPDATED_TITLE);
         assertThat(testTask.isDone()).isEqualTo(UPDATED_DONE);
         assertThat(testTask.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-
-        // Validate the Task in Elasticsearch
-        verify(mockTaskSearchRepository, times(1)).save(testTask);
     }
 
     @Test
@@ -244,9 +219,6 @@ public class TaskResourceIT {
         // Validate the Task in the database
         List<Task> taskList = taskRepository.findAll();
         assertThat(taskList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Task in Elasticsearch
-        verify(mockTaskSearchRepository, times(0)).save(task);
     }
 
     @Test
@@ -265,27 +237,5 @@ public class TaskResourceIT {
         // Validate the database contains one less item
         List<Task> taskList = taskRepository.findAll();
         assertThat(taskList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Task in Elasticsearch
-        verify(mockTaskSearchRepository, times(1)).deleteById(task.getId());
-    }
-
-    @Test
-    @Transactional
-    public void searchTask() throws Exception {
-        // Configure the mock search repository
-        // Initialize the database
-        taskRepository.saveAndFlush(task);
-        when(mockTaskSearchRepository.search(queryStringQuery("id:" + task.getId())))
-            .thenReturn(Collections.singletonList(task));
-
-        // Search the task
-        restTaskMockMvc.perform(get("/api/_search/tasks?query=id:" + task.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(task.getId().intValue())))
-            .andExpect(jsonPath("$.[*].title").value(hasItem(DEFAULT_TITLE)))
-            .andExpect(jsonPath("$.[*].done").value(hasItem(DEFAULT_DONE.booleanValue())))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
     }
 }

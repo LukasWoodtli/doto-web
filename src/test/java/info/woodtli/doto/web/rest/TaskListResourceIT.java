@@ -3,33 +3,24 @@ package info.woodtli.doto.web.rest;
 import info.woodtli.doto.DotoApp;
 import info.woodtli.doto.domain.TaskList;
 import info.woodtli.doto.repository.TaskListRepository;
-import info.woodtli.doto.repository.search.TaskListSearchRepository;
 import info.woodtli.doto.service.TaskListService;
 import info.woodtli.doto.service.dto.TaskListDTO;
 import info.woodtli.doto.service.mapper.TaskListMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Integration tests for the {@link TaskListResource} REST controller.
  */
 @SpringBootTest(classes = DotoApp.class)
-@ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
 @WithMockUser
 public class TaskListResourceIT {
@@ -53,14 +43,6 @@ public class TaskListResourceIT {
 
     @Autowired
     private TaskListService taskListService;
-
-    /**
-     * This repository is mocked in the info.woodtli.doto.repository.search test package.
-     *
-     * @see info.woodtli.doto.repository.search.TaskListSearchRepositoryMockConfiguration
-     */
-    @Autowired
-    private TaskListSearchRepository mockTaskListSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -114,9 +96,6 @@ public class TaskListResourceIT {
         assertThat(taskListList).hasSize(databaseSizeBeforeCreate + 1);
         TaskList testTaskList = taskListList.get(taskListList.size() - 1);
         assertThat(testTaskList.getName()).isEqualTo(DEFAULT_NAME);
-
-        // Validate the TaskList in Elasticsearch
-        verify(mockTaskListSearchRepository, times(1)).save(testTaskList);
     }
 
     @Test
@@ -137,9 +116,6 @@ public class TaskListResourceIT {
         // Validate the TaskList in the database
         List<TaskList> taskListList = taskListRepository.findAll();
         assertThat(taskListList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the TaskList in Elasticsearch
-        verify(mockTaskListSearchRepository, times(0)).save(taskList);
     }
 
 
@@ -204,9 +180,6 @@ public class TaskListResourceIT {
         assertThat(taskListList).hasSize(databaseSizeBeforeUpdate);
         TaskList testTaskList = taskListList.get(taskListList.size() - 1);
         assertThat(testTaskList.getName()).isEqualTo(UPDATED_NAME);
-
-        // Validate the TaskList in Elasticsearch
-        verify(mockTaskListSearchRepository, times(1)).save(testTaskList);
     }
 
     @Test
@@ -226,9 +199,6 @@ public class TaskListResourceIT {
         // Validate the TaskList in the database
         List<TaskList> taskListList = taskListRepository.findAll();
         assertThat(taskListList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the TaskList in Elasticsearch
-        verify(mockTaskListSearchRepository, times(0)).save(taskList);
     }
 
     @Test
@@ -247,25 +217,5 @@ public class TaskListResourceIT {
         // Validate the database contains one less item
         List<TaskList> taskListList = taskListRepository.findAll();
         assertThat(taskListList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the TaskList in Elasticsearch
-        verify(mockTaskListSearchRepository, times(1)).deleteById(taskList.getId());
-    }
-
-    @Test
-    @Transactional
-    public void searchTaskList() throws Exception {
-        // Configure the mock search repository
-        // Initialize the database
-        taskListRepository.saveAndFlush(taskList);
-        when(mockTaskListSearchRepository.search(queryStringQuery("id:" + taskList.getId()), PageRequest.of(0, 20)))
-            .thenReturn(new PageImpl<>(Collections.singletonList(taskList), PageRequest.of(0, 1), 1));
-
-        // Search the taskList
-        restTaskListMockMvc.perform(get("/api/_search/task-lists?query=id:" + taskList.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(taskList.getId().intValue())))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)));
     }
 }

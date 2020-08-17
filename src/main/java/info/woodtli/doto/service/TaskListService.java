@@ -2,7 +2,6 @@ package info.woodtli.doto.service;
 
 import info.woodtli.doto.domain.TaskList;
 import info.woodtli.doto.repository.TaskListRepository;
-import info.woodtli.doto.repository.search.TaskListSearchRepository;
 import info.woodtli.doto.service.dto.TaskListDTO;
 import info.woodtli.doto.service.mapper.TaskListMapper;
 import org.slf4j.Logger;
@@ -14,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * Service Implementation for managing {@link TaskList}.
@@ -30,12 +27,9 @@ public class TaskListService {
 
     private final TaskListMapper taskListMapper;
 
-    private final TaskListSearchRepository taskListSearchRepository;
-
-    public TaskListService(TaskListRepository taskListRepository, TaskListMapper taskListMapper, TaskListSearchRepository taskListSearchRepository) {
+    public TaskListService(TaskListRepository taskListRepository, TaskListMapper taskListMapper) {
         this.taskListRepository = taskListRepository;
         this.taskListMapper = taskListMapper;
-        this.taskListSearchRepository = taskListSearchRepository;
     }
 
     /**
@@ -48,9 +42,7 @@ public class TaskListService {
         log.debug("Request to save TaskList : {}", taskListDTO);
         TaskList taskList = taskListMapper.toEntity(taskListDTO);
         taskList = taskListRepository.save(taskList);
-        TaskListDTO result = taskListMapper.toDto(taskList);
-        taskListSearchRepository.save(taskList);
-        return result;
+        return taskListMapper.toDto(taskList);
     }
 
     /**
@@ -88,20 +80,5 @@ public class TaskListService {
     public void delete(Long id) {
         log.debug("Request to delete TaskList : {}", id);
         taskListRepository.deleteById(id);
-        taskListSearchRepository.deleteById(id);
-    }
-
-    /**
-     * Search for the taskList corresponding to the query.
-     *
-     * @param query the query of the search.
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public Page<TaskListDTO> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of TaskLists for query {}", query);
-        return taskListSearchRepository.search(queryStringQuery(query), pageable)
-            .map(taskListMapper::toDto);
     }
 }
