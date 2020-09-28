@@ -117,7 +117,7 @@
     "postinstall": "node node_modules/protractor/bin/webdriver-manager update --gecko false",
     "start": "npm run webpack:dev",
     "start-tls": "npm run webpack:dev -- --env.tls",
-    "serve": "npm run start",
+    "serve": "npm run start --proxy-conf proxy.conf.json",
     "build": "npm run webpack:prod",
     "test": "npm run lint && jest --coverage --logHeapUsage -w=2 --config src/test/javascript/jest.conf.js",
     "test:watch": "npm run test -- --watch",
